@@ -1,4 +1,5 @@
+import type { VPN } from 'vpn';
 
-export type Context = {
-
+export interface Context {
+    vpn: VPN,
 }

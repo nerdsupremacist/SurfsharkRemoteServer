@@ -26,15 +26,17 @@
   "dependencies": {
     "@graphql-tools/schema": "^7.1.5",
     "apollo-server-express": "^2.25.0",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.6.0",
     "express": "^4.17.1",
     "graphql": "^15.5.0",
-    "graphql-relay": "^0.7.0",
     "graphql-scalars": "^1.9.3",
     "keyv": "^3.1.0",
-    "node-cron": "^3.0.0"
+    "node-cron": "^3.0.0",
+    "node-stream-zip": "^1.15.0",
+    "openvpn-cli-wrapper": "^1.0.1"
   },
   "devDependencies": {
     "@graphql-codegen/add": "^2.0.2",
