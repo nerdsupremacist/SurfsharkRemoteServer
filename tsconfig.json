@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./src",
+        "paths": {
+            "@resolvers": [
+                "utils/resolvers.ts"
+            ],
+        },
+        "target": "es6",
+        "lib": [
+            "es2019"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "allowSyntheticDefaultImports": true,
+        "module": "commonjs",
+        "outDir": "./build",
+        "esModuleInterop": true,
+        "strict": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+    },
+    "include": [
+        "src",
+    ]
+}

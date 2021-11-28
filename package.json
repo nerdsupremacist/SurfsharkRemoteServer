@@ -1,0 +1,61 @@
+{
+  "name": "surfsharkremoteserver",
+  "version": "1.0.0",
+  "description": "GraphQL Server that allows you to set setup the VPN Connection remotely",
+  "scripts": {
+    "build": "tsc --project .",
+    "dev:start": "npm-run-all build start",
+    "dev": "nodemon --watch src -e ts,ejs --exec npm run dev:start",
+    "start": "NODE_PATH=./build node ./build/index.js",
+    "lint": "eslint ./src --ignore-pattern node_modules/ --ext .js,.ts",
+    "autofix": "eslint ./src --ignore-pattern node_modules/ --ext .js,.ts --fix",
+    "exportSchema": "ts-node ./scripts/exportSchema.ts",
+    "codegen": "graphql-codegen",
+    "codegenWatch": "nodemon --watch src/typeDefs.ts --watch codegen.yml --exec npm run codegen"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nerdsupremacist/SurfsharkRemoteServer.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nerdsupremacist/SurfsharkRemoteServer/issues"
+  },
+  "homepage": "https://github.com/nerdsupremacist/SurfsharkRemoteServer#readme",
+  "dependencies": {
+    "@graphql-tools/schema": "^7.1.5",
+    "apollo-server-express": "^2.25.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.6.0",
+    "express": "^4.17.1",
+    "graphql": "^15.5.0",
+    "graphql-relay": "^0.7.0",
+    "graphql-scalars": "^1.9.3",
+    "keyv": "^3.1.0",
+    "node-cron": "^3.0.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/add": "^2.0.2",
+    "@graphql-codegen/cli": "^1.21.5",
+    "@graphql-codegen/typescript": "^1.22.1",
+    "@graphql-codegen/typescript-resolvers": "^1.19.2",
+    "@types/cors": "^2.8.10",
+    "@types/express": "^4.17.12",
+    "@types/keyv": "^3.1.1",
+    "@types/node": "^15.6.1",
+    "@types/node-cron": "^2.0.4",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "eslint": "^7.27.0",
+    "eslint-import-resolver-typescript": "^2.4.0",
+    "eslint-plugin-import-newlines": "^1.1.2",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-sort-keys-fix": "^1.1.1",
+    "nodemon": "^2.0.7",
+    "npm-run-all": "^4.1.5",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  }
+}
