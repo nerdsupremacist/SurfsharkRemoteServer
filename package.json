@@ -35,8 +35,7 @@
     "graphql-scalars": "^1.9.3",
     "keyv": "^3.1.0",
     "node-cron": "^3.0.0",
-    "node-stream-zip": "^1.15.0",
-    "openvpn-cli-wrapper": "^1.0.1"
+    "node-stream-zip": "^1.15.0"
   },
   "devDependencies": {
     "@graphql-codegen/add": "^2.0.2",

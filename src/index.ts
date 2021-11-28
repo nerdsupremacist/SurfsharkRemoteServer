@@ -5,7 +5,7 @@ import { ApolloServer } from 'apollo-server-express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import handleExit from 'handleExit';
+// import handleExit from 'handleExit';
 import resolvers from 'resolvers';
 import Surfshark from 'surfshark';
 import { typeDefs } from 'typeDefs';
@@ -47,6 +47,6 @@ app.listen(
     },
 );
 
-handleExit(async () => {
-    await vpn.disconnect();
-});
+// handleExit(async () => {
+//     await vpn.disconnect();
+// });

@@ -1,11 +1,13 @@
 import type { AxiosInstance } from 'axios';
 import type { Cluster } from 'model';
+import type { ScheduledTask } from 'node-cron';
 import type { VPN } from 'vpn';
 
 import axios from 'axios';
 import fs from 'fs';
+import cron from 'node-cron';
 import StreamZip from 'node-stream-zip';
-import { OpenVPN } from 'openvpn-cli-wrapper';
+import OpenVPN from 'openvpn';
 import os from 'os';
 import path from 'path';
 import * as stream from 'stream';
@@ -25,6 +27,8 @@ class Surfshark implements VPN {
     #axios: AxiosInstance;
     #dataDirectory: string;
 
+    #cronTask: ScheduledTask
+
     constructor(username: string, password: string) {
         this.#username = username;
         this.#password = password;
@@ -37,10 +41,12 @@ class Surfshark implements VPN {
         );
 
         this.#dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'surfshark-vpn-remote'));
-
-        console.log(this.#dataDirectory);
-
         this.#downloadConfigs();
+        // Update configs and clusters every 30 mins
+        this.#cronTask = cron.schedule('*/30 * * * *', () => {
+            this.#downloadConfigs();
+            this.#updateClusters();
+        });
     }
 
     async connect(cluster: Cluster) {
@@ -65,7 +71,28 @@ class Surfshark implements VPN {
             ],
         );
 
-        vpn.connect();
+        await new Promise<void>((resolve, reject) => {
+            let isConnected = false;
+            
+            const onConnect = () => {
+                if (!isConnected) {
+                    resolve();
+                }
+                isConnected = true;
+            };
+
+            const onDisconnect = () => {
+                this.#connection = null;
+                if (!isConnected) {
+                    reject('Failed to start connection to vpn');
+                }
+            };
+
+            vpn.events.on('connected', onConnect.bind(this));
+            vpn.events.on('disconnected', onDisconnect.bind(this));
+            vpn.connect();
+        });
+
         this.#connection = { cluster, vpn };
     }
     
@@ -129,6 +156,7 @@ class Surfshark implements VPN {
     }
 
     #cleanUp() {
+        this.#cronTask.destroy();
         return new Promise<void>((resolve, reject) => {
             fs.rmdir(this.#dataDirectory, { recursive: true }, err => {
                 if (err != null) {
@@ -143,9 +171,10 @@ class Surfshark implements VPN {
     async #writeAuth() {
         return await new Promise<string>((resolve, reject) => {
             const file = path.join(this.#dataDirectory, '.auth');
+            const auth = `${this.#username}\n${this.#password}\n`;
             fs.writeFile(
                 file,
-                `${this.#username}\n${this.#password}\n`,
+                auth,
                 err => {
                     if (err != null) {
                         reject(err);

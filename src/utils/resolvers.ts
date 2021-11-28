@@ -1,10 +1,12 @@
 /* eslint-disable */
-import type { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+import type { NodeClusterTypeWrapper as NodeClusterTypeWrapperModel, Cluster as ClusterModel } from 'model';
 import type { Context } from 'context';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -12,11 +14,54 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  URL: string;
+};
+
+export type Cluster = Node & {
+  readonly id: Scalars['ID'];
+  readonly load: Scalars['Float'];
+  readonly location: Location;
+};
+
+export type Country = Node & {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly code: Scalars['String'];
+  readonly flagURL: Scalars['URL'];
+  readonly clusters: ReadonlyArray<Cluster>;
+};
+
+export type Location = {
+  readonly name: Scalars['String'];
+  readonly country: Country;
+};
+
+export type Mutation = {
+  readonly connect: Cluster;
+  readonly disconnect: Maybe<Cluster>;
+};
+
+
+export type MutationConnectArgs = {
+  id: Scalars['ID'];
+};
+
+export type Node = {
+  readonly id: Scalars['ID'];
 };
 
 export type Query = {
-  readonly greeting: Scalars['String'];
+  readonly node: Maybe<Node>;
+  readonly current: Maybe<Cluster>;
+  readonly countries: ReadonlyArray<Country>;
+  readonly clusters: ReadonlyArray<Cluster>;
 };
+
+
+export type QueryNodeArgs = {
+  id: Scalars['ID'];
+};
+
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
@@ -102,24 +147,84 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
-  Query: ResolverTypeWrapper<{}>;
+  Cluster: ResolverTypeWrapper<NodeClusterTypeWrapperModel>;
+  ID: ResolverTypeWrapper<Scalars['ID']>;
+  Float: ResolverTypeWrapper<Scalars['Float']>;
+  Country: ResolverTypeWrapper<NodeClusterTypeWrapperModel>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Location: ResolverTypeWrapper<ClusterModel>;
+  Mutation: ResolverTypeWrapper<{}>;
+  Node: ResolversTypes['Cluster'] | ResolversTypes['Country'];
+  Query: ResolverTypeWrapper<{}>;
+  URL: ResolverTypeWrapper<Scalars['URL']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  Query: {};
+  Cluster: NodeClusterTypeWrapperModel;
+  ID: Scalars['ID'];
+  Float: Scalars['Float'];
+  Country: NodeClusterTypeWrapperModel;
   String: Scalars['String'];
+  Location: ClusterModel;
+  Mutation: {};
+  Node: ResolversParentTypes['Cluster'] | ResolversParentTypes['Country'];
+  Query: {};
+  URL: Scalars['URL'];
   Boolean: Scalars['Boolean'];
 }>;
 
-export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  greeting: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+export type ClusterResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Cluster'] = ResolversParentTypes['Cluster']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  load: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  location: Resolver<ResolversTypes['Location'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type CountryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Country'] = ResolversParentTypes['Country']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  code: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  flagURL: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
+  clusters: Resolver<ReadonlyArray<ResolversTypes['Cluster']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type LocationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Location'] = ResolversParentTypes['Location']> = ResolversObject<{
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  country: Resolver<ResolversTypes['Country'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  connect: Resolver<ResolversTypes['Cluster'], ParentType, ContextType, RequireFields<MutationConnectArgs, 'id'>>;
+  disconnect: Resolver<Maybe<ResolversTypes['Cluster']>, ParentType, ContextType>;
+}>;
+
+export type NodeResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Node'] = ResolversParentTypes['Node']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'Cluster' | 'Country', ParentType, ContextType>;
+}>;
+
+export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  node: Resolver<Maybe<ResolversTypes['Node']>, ParentType, ContextType, RequireFields<QueryNodeArgs, 'id'>>;
+  current: Resolver<Maybe<ResolversTypes['Cluster']>, ParentType, ContextType>;
+  countries: Resolver<ReadonlyArray<ResolversTypes['Country']>, ParentType, ContextType>;
+  clusters: Resolver<ReadonlyArray<ResolversTypes['Cluster']>, ParentType, ContextType>;
+}>;
+
+export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['URL'], any> {
+  name: 'URL';
+}
+
 export type Resolvers<ContextType = Context> = ResolversObject<{
+  Cluster: ClusterResolvers<ContextType>;
+  Country: CountryResolvers<ContextType>;
+  Location: LocationResolvers<ContextType>;
+  Mutation: MutationResolvers<ContextType>;
+  Node: NodeResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
+  URL: GraphQLScalarType;
 }>;
 
 

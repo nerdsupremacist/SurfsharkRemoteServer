@@ -16,3 +16,9 @@ generates:
       contextType: context#Context
       useIndexSignature: true
       mapperTypeSuffix: Model
+      scalars:
+        URL: string
+      mappers:
+        Country: model#NodeClusterTypeWrapper
+        Location: model#Cluster
+        Cluster: model#NodeClusterTypeWrapper
