@@ -5,20 +5,16 @@ import { ApolloServer } from 'apollo-server-express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-// import handleExit from 'handleExit';
 import resolvers from 'resolvers';
-import Surfshark from 'surfshark';
 import { typeDefs } from 'typeDefs';
+import { vpn as vpnFactory } from 'vpn';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT != null ? parseInt(process.env.PORT, 10) : 8000;
 
-const username = process.env.SURFSHARK_USERNAME ?? '';
-const password = process.env.SURFSHARK_PASSWORD ?? '';
-
-const vpn = new Surfshark(username, password);
+const vpn = vpnFactory(process.env);
 const context: Context = { vpn };
 
 app.set('trust proxy', true);
