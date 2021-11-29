@@ -18,6 +18,7 @@ const Mutation: MutationResolvers = {
         if (cluster == null) {
             throw `No Cluster found with ID ${id}`;
         }
+        await vpn.disconnect();
         await vpn.connect(cluster);
         return {
             __typename: 'Cluster',
