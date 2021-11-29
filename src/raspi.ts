@@ -37,12 +37,11 @@ class Raspi implements VPN {
         await this.#sudo('/bin/systemctl', ['start', 'openvpn-client@client']);
         await this.#sudo('/bin/systemctl', ['enable', 'openvpn-client@client']);
 
-        const result = parseInt(await this.#runCommand('pidof openvpn | wc -l'));
-        if (result === 0) {
+        const isRunning = await this.#checkIfVPNIsRunning();
+        if (!isRunning) {
             const id = buildId('Cluster', cluster.id);
             throw `Failed to connect to cluster ${id}`;
         }
-
         this.#connection = cluster;
     }
     
@@ -68,11 +67,13 @@ class Raspi implements VPN {
     }
 
     async #checkIfVPNIsRunning() {
-        const result = parseInt(await this.#runCommand('pidof openvpn | wc -l')) === 0;
-        if (!result) {
+        const pid = await this.#runCommand('pidof', ['openvpn']);
+        const matches = pid.match(/^\s*[0-9]+\s*$/);
+        const isRunning = matches != null && matches.length > 0;
+        if (!isRunning) {
             this.#connection = null;
         }
-        return result;
+        return isRunning;
     }
 
     async #sudo(command: string, args: string[] = []) {
