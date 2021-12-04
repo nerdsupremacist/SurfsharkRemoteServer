@@ -31,6 +31,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.6.0",
     "express": "^4.17.1",
+    "fuse.js": "^6.4.6",
     "graphql": "^15.5.0",
     "graphql-scalars": "^1.9.3",
     "keyv": "^3.1.0",

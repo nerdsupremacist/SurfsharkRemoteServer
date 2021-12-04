@@ -5,16 +5,24 @@ import type { OpenVPNProvider } from 'vpn';
 
 import axios from 'axios';
 import fs from 'fs';
+import Fuse from 'fuse.js';
 import cron from 'node-cron';
 import StreamZip from 'node-stream-zip';
 import os from 'os';
 import path from 'path';
 import * as stream from 'stream';
 
+const fuseOptions: Fuse.IFuseOptions<Cluster> = {
+    includeScore: true,
+    keys: ['country', 'location', 'region'],
+};
+
 class SurfsharkService implements OpenVPNProvider {
     #username: string;
     #password: string;
+
     #clusters: Cluster[];
+    #fuse: Fuse<Cluster> | null;
 
     #axios: AxiosInstance;
     #dataDirectory: string;
@@ -25,6 +33,7 @@ class SurfsharkService implements OpenVPNProvider {
         this.#username = username;
         this.#password = password;
         this.#clusters = [];
+        this.#fuse = null;
         this.#axios = axios.create(
             {
                 baseURL: 'https://my.surfshark.com/vpn/api/v1/server/',
@@ -44,7 +53,13 @@ class SurfsharkService implements OpenVPNProvider {
         if (this.#clusters.length > 0) {
             return this.#clusters;
         }
-        return await this.#updateClusters();
+        const [clusters] = await this.#updateClusters();
+        return clusters;
+    }
+
+    async search(query: string) {
+        const fuse = await this.#getFuse();
+        return fuse.search(query).map(result => result.item);
     }
 
     async configuration(cluster: Cluster) {
@@ -77,11 +92,21 @@ class SurfsharkService implements OpenVPNProvider {
         });
     }
 
-    async #updateClusters() {
+    async #getFuse() {
+        if (this.#fuse != null) {
+            return this.#fuse;
+        }
+        const [, fuse] = await this.#updateClusters();
+        return fuse;
+    }
+
+    async #updateClusters(): Promise<[Cluster[], Fuse<Cluster>]> {
         const response = await this.#axios.get<Cluster[]>('clusters');
         const clusters = response.data;
         this.#clusters = clusters;
-        return clusters;
+        const fuse = new Fuse(clusters, fuseOptions);
+        this.#fuse = fuse;
+        return [clusters, fuse];
     }
 
     async #downloadConfigs() {

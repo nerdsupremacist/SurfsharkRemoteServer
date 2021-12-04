@@ -65,6 +65,10 @@ class OpenVPN implements VPN {
         return await this.#provider.clusters();
     }
 
+    async search(query: string) {
+        return await this.#provider.search(query);
+    }
+
     async disconnect() {
         if (this.#connection != null) {
             this.#connection.vpn.disconnect();

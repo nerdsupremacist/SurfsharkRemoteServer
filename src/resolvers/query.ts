@@ -61,7 +61,10 @@ const Query: QueryResolvers = {
             };
         }
         }
-        return null;
+    },
+    async search(_, { query }, { vpn }) {
+        const clusters = await vpn.search(query);
+        return clusters.map(cluster => ({ __typename: 'Cluster', cluster }));
     },
 };
 

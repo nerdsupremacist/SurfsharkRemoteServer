@@ -34,6 +34,7 @@ export const typeDefs = gql`
         current: Cluster
         countries: [Country!]!
         clusters: [Cluster!]!
+        search(query: String!): [Cluster!]!
     }
 
     type Mutation {

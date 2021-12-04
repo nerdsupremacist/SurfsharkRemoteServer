@@ -53,6 +53,10 @@ class Raspi implements VPN {
         return await this.#provider.clusters();
     }
 
+    async search(query: string) {
+        return await this.#provider.search(query);
+    }
+
     async disconnect() {
         if (this.#connection != null) {
             await this.#sudo('/bin/systemctl', ['stop', 'openvpn-client@client']);

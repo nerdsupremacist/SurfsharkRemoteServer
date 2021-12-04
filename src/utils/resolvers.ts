@@ -55,11 +55,17 @@ export type Query = {
   readonly current: Maybe<Cluster>;
   readonly countries: ReadonlyArray<Country>;
   readonly clusters: ReadonlyArray<Cluster>;
+  readonly search: ReadonlyArray<Country>;
 };
 
 
 export type QueryNodeArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QuerySearchArgs = {
+  query: Scalars['String'];
 };
 
 
@@ -211,6 +217,7 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   current: Resolver<Maybe<ResolversTypes['Cluster']>, ParentType, ContextType>;
   countries: Resolver<ReadonlyArray<ResolversTypes['Country']>, ParentType, ContextType>;
   clusters: Resolver<ReadonlyArray<ResolversTypes['Cluster']>, ParentType, ContextType>;
+  search: Resolver<ReadonlyArray<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<QuerySearchArgs, 'query'>>;
 }>;
 
 export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['URL'], any> {
