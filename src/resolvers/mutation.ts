@@ -1,5 +1,6 @@
 
 import type { MutationResolvers } from '@resolvers';
+import type { Cluster } from 'model';
 
 import { deconstructId } from 'utils/ids';
 
@@ -10,13 +11,29 @@ const Mutation: MutationResolvers = {
             throw `Invalid ID ${id}`;
         }
         const [nodeType, concreteId] = deconstructed;
-        if (nodeType !== 'Cluster') {
-            throw `ID ${id} does not belong to a cluster`;
-        }
         const clusters = await vpn.clusters();
-        const cluster = clusters.find(cluster => cluster.id === concreteId);
-        if (cluster == null) {
-            throw `No Cluster found with ID ${id}`;
+        
+        let cluster: Cluster;
+        switch (nodeType) {
+        case 'Cluster': {
+            const found = clusters.find(cluster => cluster.id === concreteId);
+            if (found == null) {
+                throw `No Cluster found with ID ${id}`;
+            }
+            cluster = found;
+            break;
+        }
+        case 'Country': {
+            const found = clusters.
+                filter(cluster => cluster.countryCode === concreteId).
+                sort((a, b) => a.load - b.load);
+
+            if (found.length < 1) {
+                throw `No Country found with ID ${id}`;
+            }
+            cluster = found[0];
+            break;
+        }
         }
         await vpn.disconnect();
         await vpn.connect(cluster);
