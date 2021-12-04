@@ -1,6 +1,7 @@
 
 import type { Cluster } from 'model';
 import type { ScheduledTask } from 'node-cron';
+import type { NodeType } from 'utils/ids';
 import type { OpenVPNProvider, VPN } from 'vpn';
 
 import { spawn } from 'child_process';
@@ -53,8 +54,8 @@ class Raspi implements VPN {
         return await this.#provider.clusters();
     }
 
-    async search(query: string) {
-        return await this.#provider.search(query);
+    async search(query: string, nodeTypes: NodeType[]) {
+        return await this.#provider.search(query, nodeTypes);
     }
 
     async disconnect() {

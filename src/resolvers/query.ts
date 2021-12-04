@@ -1,8 +1,19 @@
 
 import type { QueryResolvers } from '@resolvers';
-import type { Cluster } from 'model';
+import type { NodeType } from 'utils/ids';
 
+import { countries } from 'countries';
 import { deconstructId } from 'utils/ids';
+import { SearchableKind } from 'utils/resolvers';
+
+function nodeTypeFromSearchable(kinds: SearchableKind): NodeType {
+    switch (kinds) {
+    case SearchableKind.Cluster:
+        return 'Cluster';
+    case SearchableKind.Country:
+        return 'Country';
+    }
+}
 
 const Query: QueryResolvers = {
     async clusters(_, __, { vpn }) {
@@ -11,15 +22,7 @@ const Query: QueryResolvers = {
     },
     async countries(_, __, { vpn }) {
         const clusters = await vpn.clusters();
-        const countries: string[] = [];
-        const onePerCountry: Cluster[] = [];
-        clusters.forEach(cluster => {
-            if (!countries.includes(cluster.countryCode)) {
-                countries.push(cluster.countryCode);
-                onePerCountry.push(cluster);
-            }
-        });
-        return clusters.map(cluster => ({ __typename: 'Country', cluster }));
+        return countries(clusters).map(cluster => ({ __typename: 'Country', cluster }));
     },
     async current(_, __, { vpn }) {
         const cluster = await vpn.connected();
@@ -62,9 +65,9 @@ const Query: QueryResolvers = {
         }
         }
     },
-    async search(_, { query }, { vpn }) {
-        const clusters = await vpn.search(query);
-        return clusters.map(cluster => ({ __typename: 'Cluster', cluster }));
+    async search(_, { query, kinds }, { vpn }) {
+        const nodeTypes = kinds.map(nodeTypeFromSearchable);
+        return await vpn.search(query, nodeTypes);
     },
 };
 

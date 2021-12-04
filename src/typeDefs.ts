@@ -29,12 +29,17 @@ export const typeDefs = gql`
         location: Location!
     }
 
+    enum SearchableKind {
+        CLUSTER
+        COUNTRY
+    }
+
     type Query {
         node(id: ID!): Node
         current: Cluster
         countries: [Country!]!
         clusters: [Cluster!]!
-        search(query: String!): [Cluster!]!
+        search(query: String!, kinds: [SearchableKind!]! = [CLUSTER, COUNTRY]): [Node!]!
     }
 
     type Mutation {

@@ -1,9 +1,11 @@
 import type { AxiosInstance } from 'axios';
 import type { Cluster } from 'model';
 import type { ScheduledTask } from 'node-cron';
+import type { NodeType } from 'utils/ids';
 import type { OpenVPNProvider } from 'vpn';
 
 import axios from 'axios';
+import { countries as getCountries } from 'countries';
 import fs from 'fs';
 import Fuse from 'fuse.js';
 import cron from 'node-cron';
@@ -12,9 +14,30 @@ import os from 'os';
 import path from 'path';
 import * as stream from 'stream';
 
-const fuseOptions: Fuse.IFuseOptions<Cluster> = {
+const fuseClusterOptions: Fuse.IFuseOptions<Cluster> = {
     includeScore: true,
-    keys: ['country', 'location', 'region'],
+    keys: [
+        {
+            name: 'location',
+            weight: 2,
+        },
+        'country',
+    ],
+    minMatchCharLength: 3,
+    threshold: 0.25,
+};
+
+const fuseCountryOptions: Fuse.IFuseOptions<Cluster> = {
+    includeScore: true,
+    keys: [
+        {
+            name: 'country',
+            weight: 3,
+        },
+        'countryCode',
+    ],
+    minMatchCharLength: 2,
+    threshold: 0.25,
 };
 
 class SurfsharkService implements OpenVPNProvider {
@@ -22,7 +45,7 @@ class SurfsharkService implements OpenVPNProvider {
     #password: string;
 
     #clusters: Cluster[];
-    #fuse: Fuse<Cluster> | null;
+    #fuse: Record<NodeType, Fuse<Cluster>> | null;
 
     #axios: AxiosInstance;
     #dataDirectory: string;
@@ -57,9 +80,18 @@ class SurfsharkService implements OpenVPNProvider {
         return clusters;
     }
 
-    async search(query: string) {
+    async search(query: string, nodeTypes: NodeType[]) {
         const fuse = await this.#getFuse();
-        return fuse.search(query).map(result => result.item);
+        return nodeTypes.
+            flatMap(type => {
+                const results = fuse[type]?.
+                    search(query);
+                const mapped = results?.
+                    map(item => ({ item: { __typename: type, cluster: item.item }, score: item.score ?? 0 })) ?? [];
+                return mapped;
+            }).
+            sort((a, b) => a.score - b.score).
+            map(item => item.item);
     }
 
     async configuration(cluster: Cluster) {
@@ -100,11 +132,15 @@ class SurfsharkService implements OpenVPNProvider {
         return fuse;
     }
 
-    async #updateClusters(): Promise<[Cluster[], Fuse<Cluster>]> {
+    async #updateClusters(): Promise<[Cluster[], Record<NodeType, Fuse<Cluster>>]> {
         const response = await this.#axios.get<Cluster[]>('clusters');
         const clusters = response.data;
+        const countries = getCountries(clusters);
         this.#clusters = clusters;
-        const fuse = new Fuse(clusters, fuseOptions);
+        const fuse: Record<NodeType, Fuse<Cluster>> = {
+            'Cluster': new Fuse(clusters, fuseClusterOptions),
+            'Country': new Fuse(countries, fuseCountryOptions),
+        };
         this.#fuse = fuse;
         return [clusters, fuse];
     }

@@ -1,4 +1,5 @@
-import type { Cluster } from 'model';
+import type { Cluster, NodeClusterTypeWrapper } from 'model';
+import type { NodeType } from 'utils/ids';
 
 import dotenv from 'dotenv';
 import OpenVPN from 'openvpn';
@@ -7,7 +8,7 @@ import SurfsharkService from 'surfsharkService';
 
 export interface VPN {
     clusters(): Promise<Cluster[]>,
-    search(query: string): Promise<Cluster[]>,
+    search(query: string, types: NodeType[]): Promise<NodeClusterTypeWrapper[]>,
 
     connected(): Promise<Cluster | null>,
     connect(cluster: Cluster): Promise<void>,
@@ -18,7 +19,7 @@ export interface VPN {
 
 export interface OpenVPNProvider {
     clusters(): Promise<Cluster[]>,
-    search(query: string): Promise<Cluster[]>,
+    search(query: string, types: NodeType[]): Promise<NodeClusterTypeWrapper[]>,
     authentication(): Promise<string>,
     configuration(cluster: Cluster): Promise<string>,
     dispose(): Promise<void>,

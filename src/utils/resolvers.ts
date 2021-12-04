@@ -55,7 +55,7 @@ export type Query = {
   readonly current: Maybe<Cluster>;
   readonly countries: ReadonlyArray<Country>;
   readonly clusters: ReadonlyArray<Cluster>;
-  readonly search: ReadonlyArray<Country>;
+  readonly search: ReadonlyArray<Node>;
 };
 
 
@@ -66,7 +66,13 @@ export type QueryNodeArgs = {
 
 export type QuerySearchArgs = {
   query: Scalars['String'];
+  kinds?: ReadonlyArray<SearchableKind>;
 };
+
+export enum SearchableKind {
+  Cluster = 'CLUSTER',
+  Country = 'COUNTRY'
+}
 
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -162,6 +168,7 @@ export type ResolversTypes = ResolversObject<{
   Mutation: ResolverTypeWrapper<{}>;
   Node: ResolversTypes['Cluster'] | ResolversTypes['Country'];
   Query: ResolverTypeWrapper<{}>;
+  SearchableKind: SearchableKind;
   URL: ResolverTypeWrapper<Scalars['URL']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 }>;
@@ -217,7 +224,7 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   current: Resolver<Maybe<ResolversTypes['Cluster']>, ParentType, ContextType>;
   countries: Resolver<ReadonlyArray<ResolversTypes['Country']>, ParentType, ContextType>;
   clusters: Resolver<ReadonlyArray<ResolversTypes['Cluster']>, ParentType, ContextType>;
-  search: Resolver<ReadonlyArray<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<QuerySearchArgs, 'query'>>;
+  search: Resolver<ReadonlyArray<ResolversTypes['Node']>, ParentType, ContextType, RequireFields<QuerySearchArgs, 'query' | 'kinds'>>;
 }>;
 
 export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['URL'], any> {
