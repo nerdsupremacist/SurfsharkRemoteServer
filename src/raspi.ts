@@ -62,6 +62,7 @@ class Raspi implements VPN {
     }
 
     async dispose() {
+        this.#cronTask.destroy();
         await this.disconnect();
         await this.#provider.dispose();
     }
